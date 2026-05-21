@@ -32,6 +32,16 @@ model VerificationToken {
   @@index([token])
 }
 
+model RateLimit {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  count     Int
+  expiresAt DateTime
+
+  @@index([key])
+  @@index([expiresAt])
+}
+
 model PasswordResetToken {
   id        String   @id @default(cuid())
   email     String

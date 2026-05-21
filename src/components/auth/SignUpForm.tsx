@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
 
 const SignUpFormSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters long").max(50),
+  name: z.string().min(3, "Name must be at least 3 characters long").max(50),
   email: z.string().email("A valid email address is required"),
   password: z
     .string()
@@ -48,6 +48,7 @@ export const SignUpForm: React.FC = () => {
     formState: { errors },
   } = useForm<SignUpFormType>({
     resolver: zodResolver(SignUpFormSchema),
+    mode: "all",
   });
 
   const { ref: passwordRegisterRef, ...passwordRest } = register("password", { disabled: isPending });

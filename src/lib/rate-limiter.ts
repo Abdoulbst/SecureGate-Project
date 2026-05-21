@@ -1,41 +1,45 @@
-interface RateLimitEntry {
-  count: number;
-  resetAt: number;
-}
-
-const store = new Map<string, RateLimitEntry>();
+import { prisma } from "@/lib/prisma";
 
 export interface RateLimitConfig {
   maxRequests: number;
   windowMs: number;
 }
 
-export function checkRateLimit(
+export async function checkRateLimit(
   key: string,
   config: RateLimitConfig
-): { allowed: boolean; remaining: number; resetAt: number } {
+): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
   const now = Date.now();
-  const entry = store.get(key);
 
-  if (!entry || now >= entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + config.windowMs });
+  const existing = await prisma.rateLimit.findUnique({ where: { key } });
+
+  if (!existing || now >= existing.expiresAt.getTime()) {
+    await prisma.rateLimit.upsert({
+      where: { key },
+      update: { count: 1, expiresAt: new Date(now + config.windowMs) },
+      create: { key, count: 1, expiresAt: new Date(now + config.windowMs) },
+    });
     return { allowed: true, remaining: config.maxRequests - 1, resetAt: now + config.windowMs };
   }
 
-  if (entry.count >= config.maxRequests) {
-    return { allowed: false, remaining: 0, resetAt: entry.resetAt };
+  if (existing.count >= config.maxRequests) {
+    return { allowed: false, remaining: 0, resetAt: existing.expiresAt.getTime() };
   }
 
-  entry.count += 1;
+  await prisma.rateLimit.update({
+    where: { key },
+    data: { count: { increment: 1 } },
+  });
+
   return {
     allowed: true,
-    remaining: config.maxRequests - entry.count,
-    resetAt: entry.resetAt,
+    remaining: config.maxRequests - existing.count - 1,
+    resetAt: existing.expiresAt.getTime(),
   };
 }
 
-export function clearRateLimit(key: string): void {
-  store.delete(key);
+export async function clearRateLimit(key: string): Promise<void> {
+  await prisma.rateLimit.delete({ where: { key } }).catch(() => {});
 }
 
 export const AUTH_RATE_LIMIT: RateLimitConfig = {

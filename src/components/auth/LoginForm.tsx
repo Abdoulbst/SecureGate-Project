@@ -34,6 +34,7 @@ export const LoginForm: React.FC = () => {
     formState: { errors },
   } = useForm<LoginFormType>({
     resolver: zodResolver(LoginFormSchema),
+    mode: "all",
   });
 
   const { ref: passwordRegisterRef, ...passwordRest } = register("password", { disabled: isPending });

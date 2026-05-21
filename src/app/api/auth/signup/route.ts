@@ -11,7 +11,7 @@ import { checkRateLimit, AUTH_RATE_LIMIT } from "@/lib/rate-limiter";
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const rateLimitResult = checkRateLimit(`signup:${ip}`, AUTH_RATE_LIMIT);
+    const rateLimitResult = await checkRateLimit(`signup:${ip}`, AUTH_RATE_LIMIT);
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(

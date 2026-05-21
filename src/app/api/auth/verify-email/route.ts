@@ -9,7 +9,7 @@ import { sendWelcomeEmail } from "@/lib/email";
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const rateLimitResult = checkRateLimit(`verify-email:${ip}`, AUTH_RATE_LIMIT);
+    const rateLimitResult = await checkRateLimit(`verify-email:${ip}`, AUTH_RATE_LIMIT);
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(

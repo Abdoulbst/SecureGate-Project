@@ -10,7 +10,7 @@ import { ResendVerificationSchema } from "@/lib/validations";
 export async function POST(request: NextRequest) {
   try {
     const ip = request.headers.get("x-forwarded-for") ?? "unknown";
-    const rateLimitResult = checkRateLimit(`resend-verification:${ip}`, AUTH_RATE_LIMIT);
+    const rateLimitResult = await checkRateLimit(`resend-verification:${ip}`, AUTH_RATE_LIMIT);
 
     if (!rateLimitResult.allowed) {
       return NextResponse.json(

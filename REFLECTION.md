@@ -13,7 +13,7 @@ This is a product i built called SecureGate meant to test my ability to build a 
 The product includes the following:
 - Authentication flow:
 Sign up form
-Email verification
+Email verification 
 Sign In form
 Forget password form
 - Dashboard
